@@ -1,0 +1,21 @@
+services:
+
+  devcontainer:
+    container_name: dev
+    hostname: dev
+
+    # image: 'mcr.microsoft.com/devcontainers/dotnet:9.0-noble'
+    build: docker/
+
+    cpus: 4.0
+    mem_limit: 0gb
+    shm_size: 2gb
+
+    user: vscode
+    working_dir: /home/vscode/workspace
+
+    volumes:
+      - '../:/home/vscode/workspace/:cached'
+
+    command: sleep infinity
+
