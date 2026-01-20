@@ -19,16 +19,20 @@ builder.Configuration
                 new Uri(builder.Configuration["AppConfigEndpoint"]
                     ?? throw new InvalidOperationException("AppConfigEndpoint is not set in configuration.")),
                 new DefaultAzureCredential())
-            .ConfigureRefresh(opt => opt.RegisterAll().SetRefreshInterval(TimeSpan.FromSeconds(30)))
-            .UseFeatureFlags(opt => opt.SetRefreshInterval(TimeSpan.FromSeconds(30)))
-            .Select(KeyFilter.Any, "dev");
-
-        builder.Services.AddSingleton(options.GetRefresher());
+            .Select(KeyFilter.Any, "dev")
+            .ConfigureRefresh(opt => opt
+                // .RegisterAll()
+                .Register(key: "database2:host", label: "dev", refreshAll: true)
+                .SetRefreshInterval(TimeSpan.FromSeconds(30)))
+            .UseFeatureFlags(opt => opt.SetRefreshInterval(TimeSpan.FromSeconds(30)));
     });
-builder.Services
-    .AddFeatureManagement();
+
+builder.Services.AddFeatureManagement();
+builder.Services.AddAzureAppConfiguration();
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
+
+builder.UseAzureAppConfiguration();
 
 builder.Build().Run();

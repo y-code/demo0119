@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.FeatureManagement;
 
 namespace Company.Function;
@@ -12,17 +11,18 @@ public class Ping
 {
     private readonly ILogger _logger;
     private readonly IConfiguration _config;
-    private readonly IConfigurationRefresher _refresher;
     private readonly IFeatureManager _featureManager;
 
     public Ping(
       IConfiguration config,
-      IConfigurationRefresher refresher,
+      // REMAARK: Stop manually refreshing configuration in controller action methods
+      //          Instead, use the built-in middlewaare, which does it in the pipeline
+      //          ahead of reaching the function code.
+      // IConfigurationRefresherProvider refresherProvider,
       IFeatureManagerSnapshot featureManager,
       ILogger<Ping> logger)
     {
         _config = config;
-        _refresher = refresher;
         _featureManager = featureManager;
         _logger = logger;
     }
@@ -32,7 +32,6 @@ public class Ping
         HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req,
         CancellationToken cancel)
     {
-        await _refresher.TryRefreshAsync(cancel);
         const string NO_VALUE = "<no configuration>";
         const string key1 = "database2:host";
         const string key2 = "database2:username";
